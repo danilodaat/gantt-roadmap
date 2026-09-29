@@ -105,10 +105,19 @@
   }
   .bar:hover { opacity: 1; transform: scaleY(1.15); }
   .bar.critical { box-shadow: 0 0 0 2px var(--critical), 0 0 8px rgba(239, 68, 68, 0.3); }
+  .bar-wrapper.continuous { height: 14px; }
+  .bar.continuous {
+    opacity: 0.45;
+    background-image: repeating-linear-gradient(
+      120deg, transparent, transparent 6px, rgba(0,0,0,0.2) 6px, rgba(0,0,0,0.2) 12px
+    ) !important;
+  }
+  .bar.continuous:hover { opacity: 0.65; transform: none; }
   .bar-label {
     position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
     font-size: 10px; font-weight: 600; color: #000; white-space: nowrap;
   }
+  .bar.continuous .bar-label { color: var(--text-muted); font-weight: 500; font-size: 9px; }
 
   .milestone-diamond {
     position: absolute; width: 16px; height: 16px; background: var(--milestone);
@@ -273,7 +282,7 @@ const sections = [
       { name: 'Motor Prensa operativo', owner: 'Carlos', color: 'carlos', start: 2, dur: 2, critical: true, dep: 'Whisper + OCR' },
       { name: 'Motor Internet — Calidad', owner: 'Luis C. + Jose', color: 'luisc', start: 2, dur: 2, dep: 'Duplicados' },
       { name: 'Motor Audiovisuales', owner: 'Carlos', color: 'carlos', start: 2, dur: 2, dep: 'Proxies + Whisper' },
-      { name: 'Change Mgmt Factory', owner: 'Jose + Luis B.', color: 'jose', start: 2, dur: 8 },
+      { name: 'Change Mgmt Factory', owner: 'Jose + Luis B.', color: 'jose', start: 2, dur: 8, continuous: true },
       { name: 'Factory Completo', owner: 'MILESTONE', color: 'carlos', start: 4, dur: 0, milestone: true, critical: true },
     ]
   },
@@ -292,7 +301,7 @@ const sections = [
       { name: 'Alertas Digitales', owner: 'Por definir', color: 'transversal', start: 5, dur: 2, critical: true, dep: 'Scrapy Manager 100%' },
       { name: 'Boletines', owner: 'Aaron + Joey', color: 'aaron', start: 6, dur: 2, critical: true, dep: 'Alertas Trad + Migracion' },
       { name: 'Synaptic Report', owner: 'Por definir', color: 'transversal', start: 8, dur: 2, critical: true, dep: 'Boletines + Factory' },
-      { name: 'Change Mgmt Flow', owner: 'Jose + Luis B.', color: 'jose', start: 5, dur: 5 },
+      { name: 'Change Mgmt Flow', owner: 'Jose + Luis B.', color: 'jose', start: 5, dur: 5, continuous: true },
       { name: 'Pauta Flow Completo', owner: 'MILESTONE', color: 'danilo', start: 10, dur: 0, milestone: true, critical: true },
     ]
   },
@@ -300,15 +309,15 @@ const sections = [
     name: 'DOWNSTREAM (paralelo)',
     tasks: [
       { name: 'NotiExpress Pro', owner: 'Luis C.', color: 'luisc', start: 3, dur: 3, dep: 'Huxley' },
-      { name: 'Parley', owner: 'Carlos', color: 'carlos', start: 5, dur: 4, dep: 'Scrapy + Factory' },
-      { name: 'Lawtrack', owner: 'Aaron', color: 'aaron', start: 5, dur: 4, dep: 'Scrapy + Factory' },
-      { name: 'Stake Manager', owner: 'Aldair', color: 'aldair', start: 5, dur: 4, dep: 'Scrapy + Factory' },
+      { name: 'Parley', owner: 'Carlos', color: 'carlos', start: 6, dur: 3, dep: 'Scrapy + Factory (Carlos libre S6)' },
+      { name: 'Lawtrack', owner: 'Aaron', color: 'aaron', start: 5, dur: 3, dep: 'Scrapy + Factory' },
+      { name: 'Stake Manager', owner: 'Aldair', color: 'aldair', start: 5, dur: 3, dep: 'Scrapy + Factory' },
     ]
   },
   {
     name: 'QA TRANSVERSAL',
     tasks: [
-      { name: 'QA — Pruebas + Regresion', owner: 'Gabriela', color: 'gabriela', start: 1, dur: 9 },
+      { name: 'QA — Pruebas + Regresion', owner: 'Gabriela', color: 'gabriela', start: 1, dur: 9, continuous: true },
     ]
   }
 ];
@@ -365,19 +374,19 @@ sections.forEach(section => {
       tl.appendChild(d);
     } else {
       const w = document.createElement('div');
-      w.className = 'bar-wrapper';
+      w.className = 'bar-wrapper' + (task.continuous ? ' continuous' : '');
       w.style.left = `${(task.start / TOTAL_WEEKS) * 100}%`;
       w.style.width = `${Math.max((task.dur / TOTAL_WEEKS) * 100, 3)}%`;
 
       const b = document.createElement('div');
-      b.className = 'bar' + (task.critical ? ' critical' : '');
+      b.className = 'bar' + (task.critical ? ' critical' : '') + (task.continuous ? ' continuous' : '');
       b.style.background = COLORS[task.color] || COLORS.transversal;
       b.title = `${task.name} (${task.dur} sem)`;
 
-      if (task.dur >= 3) {
+      if (task.dur >= 3 || task.continuous) {
         const l = document.createElement('span');
         l.className = 'bar-label';
-        l.textContent = `${task.dur}s`;
+        l.textContent = task.continuous ? 'continuo' : `${task.dur}s`;
         b.appendChild(l);
       }
       w.appendChild(b);
