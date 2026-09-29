@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gantt — Pauta Factory & Pauta Flow</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e4e7;
+    --text-muted: #8b8d98;
+    --accent: #6366f1;
+    --critical: #ef4444;
+    --milestone: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px;
+  }
+
+  .header { margin-bottom: 28px; }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header p { color: var(--text-muted); font-size: 14px; }
+
+  .summary-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .card-value { font-size: 22px; font-weight: 700; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;
+    padding: 10px 14px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  .gantt-container {
+    background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow-x: auto;
+  }
+  .gantt-table { min-width: 1000px; width: 100%; }
+
+  .gantt-header {
+    display: grid; grid-template-columns: 280px 1fr;
+    border-bottom: 2px solid var(--border); position: sticky; top: 0; background: var(--surface); z-index: 10;
+  }
+  .gantt-header-label {
+    padding: 10px 14px; font-weight: 600; font-size: 12px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid var(--border);
+  }
+  .gantt-header-weeks { display: grid; grid-template-columns: repeat(10, 1fr); }
+  .week-col {
+    padding: 6px 2px; text-align: center; font-size: 11px; color: var(--text-muted);
+    border-right: 1px solid var(--border);
+  }
+  .week-col .week-num { font-weight: 600; color: var(--text); font-size: 12px; }
+  .week-col .week-date { font-size: 10px; margin-top: 1px; }
+
+  .gantt-section { border-bottom: 1px solid var(--border); }
+  .section-title {
+    display: grid; grid-template-columns: 280px 1fr;
+    background: rgba(99, 102, 241, 0.08); cursor: pointer; user-select: none;
+  }
+  .section-title:hover { background: rgba(99, 102, 241, 0.12); }
+  .section-title-text {
+    padding: 9px 14px; font-weight: 700; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--accent); border-right: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title-text .arrow { transition: transform 0.2s; font-size: 10px; }
+  .section-title-text .arrow.collapsed { transform: rotate(-90deg); }
+
+  .gantt-row {
+    display: grid; grid-template-columns: 280px 1fr;
+    border-bottom: 1px solid rgba(42, 45, 58, 0.5); transition: background 0.15s;
+  }
+  .gantt-row:hover { background: rgba(255,255,255,0.03); }
+  .gantt-row.milestone-row { background: rgba(245, 158, 11, 0.05); }
+
+  .task-info {
+    padding: 7px 14px; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .task-name { font-size: 13px; font-weight: 500; }
+  .task-owner { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .task-dep { font-size: 10px; color: var(--critical); margin-top: 1px; font-style: italic; }
+
+  .task-timeline {
+    display: grid; grid-template-columns: repeat(10, 1fr);
+    position: relative; align-items: center; min-height: 36px;
+  }
+
+  .bar-wrapper { position: absolute; height: 24px; display: flex; align-items: center; }
+  .bar {
+    height: 100%; border-radius: 4px; width: 100%; position: relative;
+    opacity: 0.85; transition: opacity 0.2s, transform 0.15s;
+  }
+  .bar:hover { opacity: 1; transform: scaleY(1.15); }
+  .bar.critical { box-shadow: 0 0 0 2px var(--critical), 0 0 8px rgba(239, 68, 68, 0.3); }
+  .bar-label {
+    position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+    font-size: 10px; font-weight: 600; color: #000; white-space: nowrap;
+  }
+
+  .milestone-diamond {
+    position: absolute; width: 16px; height: 16px; background: var(--milestone);
+    transform: rotate(45deg); border-radius: 2px; box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+  }
+
+  .critical-path {
+    margin-top: 20px; padding: 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; border-left: 3px solid var(--critical);
+  }
+  .critical-path h3 { font-size: 13px; color: var(--critical); margin-bottom: 8px; }
+  .critical-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 11px; }
+  .critical-chain .step {
+    background: rgba(239, 68, 68, 0.15); padding: 3px 8px; border-radius: 4px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  .critical-chain .arr { color: var(--critical); font-weight: 700; }
+
+  .risks {
+    margin-top: 14px; padding: 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  .risks h3 { font-size: 13px; margin-bottom: 8px; }
+  .risk-item { display: flex; gap: 8px; margin-bottom: 6px; font-size: 12px; line-height: 1.4; }
+  .risk-badge {
+    padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700;
+    flex-shrink: 0; height: fit-content; margin-top: 2px;
+  }
+  .risk-high { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .risk-med { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+
+  .footer { margin-top: 20px; font-size: 11px; color: var(--text-muted); text-align: center; }
+
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .header h1 { font-size: 18px; }
+    .gantt-table { min-width: 800px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Pauta Factory & Pauta Flow</h1>
+  <p>Roadmap 10 semanas · 6 frentes paralelos · 29 Sep → 8 Dic 2026</p>
+</div>
+
+<div class="summary-cards">
+  <div class="card">
+    <div class="card-label">Duracion</div>
+    <div class="card-value">10 sem</div>
+    <div class="card-sub">29 Sep → 8 Dic 2026</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Frentes</div>
+    <div class="card-value">6</div>
+    <div class="card-sub">Carlos · Luis C. · Aaron · Jose · Gabriela · Danilo</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Tareas</div>
+    <div class="card-value">22</div>
+    <div class="card-sub">8 en camino critico</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Meta</div>
+    <div class="card-value" style="font-size:14px;">Pauta Flow reemplaza Mini Pauta Suite</div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Carlos</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#14b8a6"></div> Aldair</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Luis C.</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Aaron + Joey</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Jose</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div> Gabriela</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Danilo</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div> Transversal</div>
+  <div class="legend-item" style="margin-left:12px;"><div style="width:12px;height:12px;border:2px solid var(--critical);border-radius:3px;"></div> Critico</div>
+  <div class="legend-item"><div style="width:10px;height:10px;background:var(--milestone);transform:rotate(45deg);border-radius:2px;"></div> Milestone</div>
+</div>
+
+<div class="gantt-container">
+  <div class="gantt-table" id="gantt">
+    <div class="gantt-header">
+      <div class="gantt-header-label">Tarea / Responsable</div>
+      <div class="gantt-header-weeks" id="weekHeaders"></div>
+    </div>
+    <div id="ganttBody"></div>
+  </div>
+</div>
+
+<div class="critical-path">
+  <h3>Camino Critico — 10 semanas</h3>
+  <div class="critical-chain">
+    <span class="step">Whisper RunPod (S1-2)</span><span class="arr">→</span>
+    <span class="step">Motor Prensa (S3-4)</span><span class="arr">→</span>
+    <span class="step">Scrapy Manager (S3-5)</span><span class="arr">→</span>
+    <span class="step">Factory OK (S4)</span><span class="arr">→</span>
+    <span class="step">Alertas Trad (S5-6)</span><span class="arr">→</span>
+    <span class="step">Boletines (S7-8)</span><span class="arr">→</span>
+    <span class="step">Synaptic Report (S9-10)</span><span class="arr">→</span>
+    <span class="step">Pauta Flow (S10)</span>
+  </div>
+</div>
+
+<div class="risks">
+  <h3>Riesgos</h3>
+  <div class="risk-item">
+    <span class="risk-badge risk-high">ALTO</span>
+    <span><b>Carlos en 4 frentes</b> — Whisper + Scrapy + Proxies + Citas. Si Whisper no cierra en S2, arrastra Scrapy → Alertas Digitales → Parley.</span>
+  </div>
+  <div class="risk-item">
+    <span class="risk-badge risk-high">ALTO</span>
+    <span><b>Luis C. multi-frente</b> — Huxley + Duplicados + Migracion + Calidad. Bloqueo en Huxley frena NotiExpress Pro.</span>
+  </div>
+  <div class="risk-item">
+    <span class="risk-badge risk-med">MEDIO</span>
+    <span><b>Migracion datos legacy</b> — Complejidad incierta. Si requiere a Danilo, cuello de botella.</span>
+  </div>
+  <div class="risk-item">
+    <span class="risk-badge risk-med">MEDIO</span>
+    <span><b>Change Management</b> — Luis B. + Jose deben lograr adoption real de operadores. Sin eso, Factory funciona pero no se usa bien.</span>
+  </div>
+</div>
+
+<div class="footer">DAAT · Pauta Factory & Flow Roadmap · Actualizado: <span id="updated"></span></div>
+
+<script>
+document.getElementById('updated').textContent = new Date().toLocaleDateString('es-PE', {day:'numeric',month:'long',year:'numeric'});
+
+const TOTAL_WEEKS = 10;
+const START_DATE = new Date(2026, 8, 29);
+
+const COLORS = {
+  carlos: '#f59e0b',
+  aldair: '#14b8a6',
+  luisc: '#3b82f6',
+  aaron: '#10b981',
+  jose: '#a78bfa',
+  luisb: '#818cf8',
+  gabriela: '#ec4899',
+  danilo: '#ef4444',
+  transversal: '#6366f1',
+};
+
+const sections = [
+  {
+    name: 'HABILITADORES (S1-S3)',
+    tasks: [
+      { name: 'Whisper → RunPod', owner: 'Carlos', color: 'carlos', start: 0, dur: 2, critical: true },
+      { name: 'Validacion OCR / Prensa', owner: 'Carlos + Gabriela', color: 'carlos', start: 1, dur: 2, critical: true, dep: 'Whisper (overlap S2)' },
+      { name: 'Huxley — Clientes/Orgs', owner: 'Luis C.', color: 'luisc', start: 0, dur: 3 },
+      { name: 'Arq. Datos — Duplicados medios', owner: 'Luis C.', color: 'luisc', start: 0, dur: 2 },
+      { name: 'Proxies Peru / Brasil', owner: 'Carlos', color: 'carlos', start: 0, dur: 2 },
+      { name: 'Google Drive / PDFs', owner: 'Jose', color: 'jose', start: 0, dur: 1 },
+    ]
+  },
+  {
+    name: 'FACTORY (S3-S4)',
+    tasks: [
+      { name: 'Motor Prensa operativo', owner: 'Carlos', color: 'carlos', start: 2, dur: 2, critical: true, dep: 'Whisper + OCR' },
+      { name: 'Motor Internet — Calidad', owner: 'Luis C. + Jose', color: 'luisc', start: 2, dur: 2, dep: 'Duplicados' },
+      { name: 'Motor Audiovisuales', owner: 'Carlos', color: 'carlos', start: 2, dur: 2, dep: 'Proxies + Whisper' },
+      { name: 'Change Management (Flow)', owner: 'Luis B. + Jose', color: 'jose', start: 2, dur: 8 },
+      { name: 'Factory Completo', owner: 'MILESTONE', color: 'carlos', start: 4, dur: 0, milestone: true, critical: true },
+    ]
+  },
+  {
+    name: 'SCRAPY MANAGER (S3-S5)',
+    tasks: [
+      { name: 'Scrapy Manager', owner: 'Carlos', color: 'carlos', start: 2, dur: 3, critical: true, dep: 'Whisper estable' },
+      { name: 'Citas / Stakeholders', owner: 'Carlos', color: 'carlos', start: 4, dur: 2, dep: 'Scrapy Manager' },
+    ]
+  },
+  {
+    name: 'PAUTA FLOW (S5-S10)',
+    tasks: [
+      { name: 'Alertas Tradicionales', owner: 'Aaron + Joey', color: 'aaron', start: 4, dur: 2, critical: true, dep: 'Factory completo' },
+      { name: 'Migracion de datos (legacy)', owner: 'Luis C. (+ Danilo)', color: 'luisc', start: 3, dur: 3, dep: 'Arq. Datos lista' },
+      { name: 'Alertas Digitales', owner: 'Por definir', color: 'transversal', start: 5, dur: 2, critical: true, dep: 'Scrapy Manager 100%' },
+      { name: 'Boletines', owner: 'Aaron + Joey', color: 'aaron', start: 6, dur: 2, critical: true, dep: 'Alertas Trad + Migracion' },
+      { name: 'Synaptic Report', owner: 'Por definir', color: 'transversal', start: 8, dur: 2, critical: true, dep: 'Boletines + Factory' },
+      { name: 'Pauta Flow Completo', owner: 'MILESTONE', color: 'danilo', start: 10, dur: 0, milestone: true, critical: true },
+    ]
+  },
+  {
+    name: 'DOWNSTREAM (paralelo)',
+    tasks: [
+      { name: 'NotiExpress Pro', owner: 'Luis C.', color: 'luisc', start: 3, dur: 3, dep: 'Huxley' },
+      { name: 'Parley', owner: 'Carlos', color: 'carlos', start: 5, dur: 4, dep: 'Scrapy + Factory' },
+      { name: 'Lawtrack', owner: 'Aaron', color: 'aaron', start: 5, dur: 4, dep: 'Scrapy + Factory' },
+      { name: 'Stake Manager', owner: 'Aldair', color: 'aldair', start: 5, dur: 4, dep: 'Scrapy + Factory' },
+    ]
+  },
+  {
+    name: 'QA TRANSVERSAL',
+    tasks: [
+      { name: 'QA — Pruebas + Regresion', owner: 'Gabriela', color: 'gabriela', start: 1, dur: 9 },
+    ]
+  }
+];
+
+const weekHeadersEl = document.getElementById('weekHeaders');
+for (let i = 0; i < TOTAL_WEEKS; i++) {
+  const d = new Date(START_DATE);
+  d.setDate(d.getDate() + i * 7);
+  const m = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  weekHeadersEl.innerHTML += `<div class="week-col"><div class="week-num">S${i+1}</div><div class="week-date">${d.getDate()} ${m[d.getMonth()]}</div></div>`;
+}
+
+const body = document.getElementById('ganttBody');
+
+sections.forEach(section => {
+  const sEl = document.createElement('div');
+  sEl.className = 'gantt-section';
+
+  const tEl = document.createElement('div');
+  tEl.className = 'section-title';
+  tEl.innerHTML = `<div class="section-title-text"><span class="arrow">\u25BC</span> ${section.name}</div><div></div>`;
+
+  const tc = document.createElement('div');
+  tc.className = 'section-tasks';
+
+  tEl.addEventListener('click', () => {
+    const a = tEl.querySelector('.arrow');
+    if (tc.style.display === 'none') { tc.style.display = 'block'; a.classList.remove('collapsed'); }
+    else { tc.style.display = 'none'; a.classList.add('collapsed'); }
+  });
+
+  section.tasks.forEach(task => {
+    const row = document.createElement('div');
+    row.className = 'gantt-row' + (task.milestone ? ' milestone-row' : '');
+
+    const info = document.createElement('div');
+    info.className = 'task-info';
+    const crit = task.critical ? ' <span style="color:var(--critical);font-size:10px;">\u25CF</span>' : '';
+    info.innerHTML = `
+      <div class="task-name">${task.milestone ? '\u25C6 ' : ''}${task.name}${crit}</div>
+      <div class="task-owner">${task.owner}${!task.milestone && task.dur ? ' \u00B7 ' + task.dur + 's' : ''}</div>
+      ${task.dep ? `<div class="task-dep">\u2190 ${task.dep}</div>` : ''}`;
+
+    const tl = document.createElement('div');
+    tl.className = 'task-timeline';
+    tl.style.position = 'relative';
+
+    if (task.milestone) {
+      const d = document.createElement('div');
+      d.className = 'milestone-diamond';
+      d.style.left = `calc(${Math.min((task.start / TOTAL_WEEKS) * 100, 96)}% - 8px)`;
+      d.style.position = 'absolute';
+      d.title = task.name;
+      tl.appendChild(d);
+    } else {
+      const w = document.createElement('div');
+      w.className = 'bar-wrapper';
+      w.style.left = `${(task.start / TOTAL_WEEKS) * 100}%`;
+      w.style.width = `${Math.max((task.dur / TOTAL_WEEKS) * 100, 3)}%`;
+
+      const b = document.createElement('div');
+      b.className = 'bar' + (task.critical ? ' critical' : '');
+      b.style.background = COLORS[task.color] || COLORS.transversal;
+      b.title = `${task.name} (${task.dur} sem)`;
+
+      if (task.dur >= 3) {
+        const l = document.createElement('span');
+        l.className = 'bar-label';
+        l.textContent = `${task.dur}s`;
+        b.appendChild(l);
+      }
+      w.appendChild(b);
+      tl.appendChild(w);
+    }
+
+    row.appendChild(info);
+    row.appendChild(tl);
+    tc.appendChild(row);
+  });
+
+  sEl.appendChild(tEl);
+  sEl.appendChild(tc);
+  body.appendChild(sEl);
+});
+</script>
+</body>
+</html>
