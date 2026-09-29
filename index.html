@@ -191,8 +191,10 @@
   <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Carlos</div>
   <div class="legend-item"><div class="legend-dot" style="background:#14b8a6"></div> Aldair</div>
   <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Luis C.</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Aaron + Joey</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Aaron</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div> Joey</div>
   <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Jose</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#818cf8"></div> Luis B.</div>
   <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div> Gabriela</div>
   <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Danilo</div>
   <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div> Transversal</div>
@@ -257,6 +259,7 @@ const COLORS = {
   aldair: '#14b8a6',
   luisc: '#3b82f6',
   aaron: '#10b981',
+  joey: '#34d399',
   jose: '#a78bfa',
   luisb: '#818cf8',
   gabriela: '#ec4899',
@@ -273,7 +276,7 @@ const sections = [
       { name: 'Huxley — Clientes/Orgs', owner: 'Luis C.', color: 'luisc', start: 0, dur: 3 },
       { name: 'Arq. Datos — Duplicados medios', owner: 'Luis C.', color: 'luisc', start: 0, dur: 2 },
       { name: 'Proxies Peru / Brasil', owner: 'Carlos', color: 'carlos', start: 0, dur: 2 },
-      { name: 'Google Drive / PDFs', owner: 'Jose', color: 'jose', start: 0, dur: 1 },
+      { name: 'Google Drive / PDFs', owner: 'Luis B.', color: 'luisb', start: 0, dur: 1 },
     ]
   },
   {
@@ -296,10 +299,10 @@ const sections = [
   {
     name: 'PAUTA FLOW (S5-S10)',
     tasks: [
-      { name: 'Alertas Tradicionales', owner: 'Aaron + Joey', color: 'aaron', start: 4, dur: 2, critical: true, dep: 'Factory completo' },
+      { name: 'Alertas Tradicionales', owner: 'Aaron', color: 'aaron', start: 4, dur: 2, critical: true, dep: 'Factory completo' },
       { name: 'Migracion de datos (legacy)', owner: 'Luis C. (+ Danilo)', color: 'luisc', start: 3, dur: 3, dep: 'Arq. Datos lista' },
       { name: 'Alertas Digitales', owner: 'Por definir', color: 'transversal', start: 5, dur: 2, critical: true, dep: 'Scrapy Manager 100%' },
-      { name: 'Boletines', owner: 'Aaron + Joey', color: 'aaron', start: 6, dur: 2, critical: true, dep: 'Alertas Trad + Migracion' },
+      { name: 'Boletines', owner: 'Joey', color: 'joey', start: 6, dur: 2, critical: true, dep: 'Alertas Trad + Migracion' },
       { name: 'Synaptic Report', owner: 'Por definir', color: 'transversal', start: 8, dur: 2, critical: true, dep: 'Boletines + Factory' },
       { name: 'Change Mgmt Flow', owner: 'Jose + Luis B.', color: 'jose', start: 5, dur: 5, continuous: true },
       { name: 'Pauta Flow Completo', owner: 'MILESTONE', color: 'danilo', start: 10, dur: 0, milestone: true, critical: true },
