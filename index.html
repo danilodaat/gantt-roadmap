@@ -287,6 +287,7 @@ const sections = [
       { name: 'Motor Audiovisuales', owner: 'Carlos', color: 'carlos', start: 2, dur: 2, dep: 'Proxies + Whisper' },
       { name: 'Change Mgmt Factory', owner: 'Jose + Luis B.', color: 'jose', start: 2, dur: 8, continuous: true },
       { name: 'Factory Completo', owner: 'MILESTONE', color: 'carlos', start: 4, dur: 0, milestone: true, critical: true },
+      { name: 'Valorizado', owner: 'Joey', color: 'joey', start: 5, dur: 4, dep: 'Ya avanzado, sprint 2' },
     ]
   },
   {
@@ -311,16 +312,10 @@ const sections = [
     ]
   },
   {
-    name: 'SPRINT 2 — EN PROGRESO (max 4 sem)',
-    tasks: [
-      { name: 'Valorizado (Factory)', owner: 'Joey', color: 'joey', start: 0, dur: 4, dep: 'Ya avanzado' },
-      { name: 'Reportes NotiExpress', owner: 'Aaron', color: 'aaron', start: 0, dur: 4, dep: 'Ya avanzado' },
-    ]
-  },
-  {
     name: 'DOWNSTREAM (paralelo)',
     tasks: [
       { name: 'NotiExpress Pro', owner: 'Luis C.', color: 'luisc', start: 3, dur: 3, dep: 'Huxley' },
+      { name: 'Reportes NotiExpress', owner: 'Aaron', color: 'aaron', start: 5, dur: 4, dep: 'Ya avanzado, sprint 2' },
       { name: 'Parley', owner: 'Carlos', color: 'carlos', start: 6, dur: 3, dep: 'Scrapy + Factory (Carlos libre S6)' },
       { name: 'Lawtrack', owner: 'Aaron', color: 'aaron', start: 5, dur: 3, dep: 'Scrapy + Factory' },
       { name: 'Stake Manager', owner: 'Aldair', color: 'aldair', start: 5, dur: 3, dep: 'Scrapy + Factory' },
