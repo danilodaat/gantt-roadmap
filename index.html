@@ -178,7 +178,7 @@
   </div>
   <div class="card">
     <div class="card-label">Tareas</div>
-    <div class="card-value">23</div>
+    <div class="card-value">27</div>
     <div class="card-sub">8 en camino critico</div>
   </div>
   <div class="card">
@@ -304,8 +304,17 @@ const sections = [
       { name: 'Alertas Digitales', owner: 'Por definir', color: 'transversal', start: 5, dur: 2, critical: true, dep: 'Scrapy Manager 100%' },
       { name: 'Boletines', owner: 'Joey', color: 'joey', start: 6, dur: 2, critical: true, dep: 'Alertas Trad + Migracion' },
       { name: 'Synaptic Report', owner: 'Por definir', color: 'transversal', start: 8, dur: 2, critical: true, dep: 'Boletines + Factory' },
+      { name: 'Envio Telegram', owner: 'Aaron', color: 'aaron', start: 6, dur: 2, dep: 'Alertas Trad' },
+      { name: 'Envio WhatsApp', owner: 'Aaron', color: 'aaron', start: 7, dur: 2, dep: 'Alertas Trad' },
       { name: 'Change Mgmt Flow', owner: 'Jose + Luis B.', color: 'jose', start: 5, dur: 5, continuous: true },
       { name: 'Pauta Flow Completo', owner: 'MILESTONE', color: 'danilo', start: 10, dur: 0, milestone: true, critical: true },
+    ]
+  },
+  {
+    name: 'SPRINT 2 — EN PROGRESO (max 4 sem)',
+    tasks: [
+      { name: 'Valorizado (Factory)', owner: 'Joey', color: 'joey', start: 0, dur: 4, dep: 'Ya avanzado' },
+      { name: 'Reportes NotiExpress', owner: 'Aaron', color: 'aaron', start: 0, dur: 4, dep: 'Ya avanzado' },
     ]
   },
   {
