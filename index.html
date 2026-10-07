@@ -285,8 +285,8 @@
 <div class="risks">
   <h3>Riesgos (actualizado 7 Oct)</h3>
   <div class="risk-item">
-    <span class="risk-badge risk-high">ALTO</span>
-    <span><b>Deploy de Huxley trabado</b> — desde el 5-oct GitHub Actions de DAAT-RI no asigna runners ("job was not acquired by Runner"). Ningún cambio de Huxley llega a producción: frena Huxley Clientes/Orgs, NotiExpress Pro y el borrado de interacciones de Citas. Probable límite de minutos/gasto de Actions.</span>
+    <span class="risk-badge risk-med">MEDIO</span>
+    <span><b>Cupo de GitHub Actions</b> — la org DAAT-RI tiene plan gratuito: 2.000 minutos al mes para repos privados. En septiembre usó 2.044. En octubre lleva 1.089 en 7 días (Huxley 658, Scrapy Manager 425), así que a este ritmo se agota hacia el 13-oct. Si el límite de gasto está en US$0, se frenan los deploys de Huxley. (La caída del 5-oct fue un incidente de GitHub y ya se resolvió el 6-oct.)</span>
   </div>
   <div class="risk-item">
     <span class="risk-badge risk-high">ALTO</span>
@@ -355,7 +355,7 @@ const sections = [
       { name: 'Validacion OCR / Prensa', owner: 'Carlos + Gabriela', color: 'carlos', start: 1, dur: 2, critical: true, dep: 'Google Vision (ya no depende de Whisper)',
         status: 'hecho', pct: 100, note: 'Google Vision + Luna en todos los diarios desde el 5-oct. gpt-4o-mini inventaba cifras y salió del flujo. YOLO queda en el repo, sin uso.' },
       { name: 'Huxley — Clientes/Orgs', owner: 'Luis C.', color: 'luisc', start: 0, dur: 3,
-        status: 'en-curso', pct: 30, note: 'Decidido: organización = cliente de Huxley, 1 a 1 (28-sep). Emisoras Cruz creada en NotiExpress Pro con 0 usuarios. Fases sin OK; el deploy de Huxley está trabado.' },
+        status: 'en-curso', pct: 30, note: 'Decidido: organización = cliente de Huxley, 1 a 1 (28-sep). Emisoras Cruz creada en NotiExpress Pro con 0 usuarios. Fases sin OK.' },
       { name: 'Arq. Datos — Duplicados medios', owner: 'Luis C.', color: 'luisc', start: 0, dur: 2,
         status: 'en-curso', note: 'Propuesta de fusión de medios documentada (27-sep). Sin dato de ejecución.' },
       { name: 'Proxies Peru / Brasil', owner: 'Carlos', color: 'carlos', start: 0, dur: 2,
@@ -386,7 +386,7 @@ const sections = [
       { name: 'Scrapy Manager', owner: 'Carlos', color: 'carlos', start: 2, dur: 3, critical: true, dep: 'Whisper estable',
         status: 'pendiente', note: 'Propuesta de clasificar con la taxonomía de Factory (28-sep). Hoy sigue escribiendo en Huxley la clasificación vieja, solo de nivel 1.' },
       { name: 'Citas / Stakeholders', owner: 'Carlos', color: 'carlos', start: 4, dur: 2, dep: 'Hecho en Factory (no depende de Scrapy)',
-        status: 'adelantado', pct: 85, note: 'En producción desde el 5-oct: declaraciones y menciones de stakeholders seguidos, bandeja de revisión y publicación en Huxley. Falta el deploy de Huxley para poder borrar interacciones.' },
+        status: 'adelantado', pct: 85, note: 'En producción desde el 5-oct: declaraciones y menciones de stakeholders seguidos, bandeja de revisión y publicación en Huxley. El permiso para borrar interacciones quedó desplegado en Huxley el 6-oct.' },
     ]
   },
   {
